@@ -21,7 +21,7 @@ enable-normalization-opposite-orientation-for-nested-containers = true
 # See: https://nikitabobko.github.io/AeroSpace/guide#layouts
 # The 'accordion-padding' specifies the size of accordion padding
 # You can set 0 to disable the padding feature
-accordion-padding = 0
+accordion-padding = 10
 
 # Possible values: tiles|accordion
 default-root-container-layout = 'tiles'
@@ -104,16 +104,11 @@ outer.left = 5
 # '''
 
 # App shortcuts
-alt-b = 'exec-and-forget open -a /Applications/Brave\ Browser.app'
-alt-c = 'exec-and-forget open -a /Applications/Cursor.app'
-alt-i = 'exec-and-forget open -a /Applications/Ghostty.app'
+alt-b = 'exec-and-forget open -a /Applications/Google\ Chrome.app'
+alt-c = 'exec-and-forget open -a /Applications/Visual\ Studio\ Code.app'
+alt-i = 'exec-and-forget open -a /Applications/WezTerm.app'
 alt-s = 'exec-and-forget open -a /Applications/Slack.app'
-alt-d = 'exec-and-forget open -a /Applications/Discord.app'
-alt-p = 'exec-and-forget open -a /Applications/Adobe\ Premiere\ Pro\ 2024/Adobe\ Premiere\ Pro\ 2024.app/'
-alt-o = 'exec-and-forget open -a /Applications/OBS.app/'
-alt-w = 'exec-and-forget open -a /Applications/Obsidian.app'
 alt-n = 'exec-and-forget open -a /Applications/Notion.app'
-alt-a = 'exec-and-forget open -a /Applications/ChatGPT.app'
 alt-shift-r = ['exec-and-forget /opt/homebrew/bin/sketchybar --reload']
 
 # See: https://nikitabobko.github.ioeAeroSpace/commands#layout
@@ -183,15 +178,15 @@ alt-shift-l = ['join-with right', 'mode main']
 
 # Default space
 [[on-window-detected]]
-if.app-id ='com.brave.Browser'
+if.app-id ='com.google.Chrome'
 run = ['move-node-to-workspace 1']
 
 [[on-window-detected]]
-if.app-id ='com.brave.Browser.app.adcclpceapdbhchilkbngkehpppaefko'
+if.app-id ='com.google.Chrome.app.adcclpceapdbhchilkbngkehpppaefko'
 run = ['move-node-to-workspace 1']
 
 [[on-window-detected]]
-if.app-id ='com.mitchellh.ghostty'
+if.app-id ='com.WezTerm.WezTerm'
 run = ['move-node-to-workspace 2']
 
 [[on-window-detected]]
@@ -203,20 +198,9 @@ if.app-id ='notion.id'
 run = ['move-node-to-workspace 4']
 
 [[on-window-detected]]
-if.app-id ='md.obsidian'
-run = ['move-node-to-workspace 4']
-
-[[on-window-detected]]
 if.app-id ='com.tinyspeck.slackmacgap'
 run = ['move-node-to-workspace 5']
 
-[[on-window-detected]]
-if.app-id ='com.hnc.Discord'
-run = ['move-node-to-workspace 5']
-
-[[on-window-detected]]
-if.app-id ='com.adobe.PremierePro.24'
-run = ['move-node-to-workspace 6']
 
 # force certain workspaces to certain monitors
 [workspace-to-monitor-force-assignment]
