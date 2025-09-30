@@ -109,6 +109,8 @@ alt-c = 'exec-and-forget open -a /Applications/Visual\ Studio\ Code.app'
 alt-i = 'exec-and-forget open -a /Applications/WezTerm.app'
 alt-s = 'exec-and-forget open -a /Applications/Slack.app'
 alt-n = 'exec-and-forget open -a /Applications/Notion.app'
+alt-p = 'exec-and-forget open -a /Applications/Postman.app'
+alt-l = 'exec-and-forget open -a /Applications/Linear.app'
 alt-shift-r = ['exec-and-forget /opt/homebrew/bin/sketchybar --reload']
 
 # See: https://nikitabobko.github.ioeAeroSpace/commands#layout
@@ -200,6 +202,14 @@ run = ['move-node-to-workspace 4']
 [[on-window-detected]]
 if.app-id ='com.tinyspeck.slackmacgap'
 run = ['move-node-to-workspace 5']
+
+[[on-window-detected]]
+if.app-id ='com.postmanlabs.Postman'
+run = ['move-node-to-workspace 6']
+
+[[on-window-detected]]
+if.app-id ='com.linearstudio.linear'
+run = ['move-node-to-workspace 7']
 
 
 # force certain workspaces to certain monitors
