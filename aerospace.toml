@@ -21,7 +21,7 @@ enable-normalization-opposite-orientation-for-nested-containers = true
 # See: https://nikitabobko.github.io/AeroSpace/guide#layouts
 # The 'accordion-padding' specifies the size of accordion padding
 # You can set 0 to disable the padding feature
-accordion-padding = 10
+accordion-padding = 30
 
 # Possible values: tiles|accordion
 default-root-container-layout = 'tiles'
@@ -66,12 +66,12 @@ preset = 'qwerty'
 #                 Monitor pattern is the same as for 'workspace-to-monitor-force-assignment'.
 #                 See: https://nikitabobko.github.io/AeroSpace/guide#assign-workspaces-to-monitors
 [gaps]
-inner.horizontal = 8
-inner.vertical = 8
-outer.bottom = 5
-outer.top = [{ monitor.main = 10}, 10]
-outer.right = 5
-outer.left = 5
+inner.horizontal = 12
+inner.vertical = 12
+outer.bottom = 8
+outer.top = [{ monitor.main = 15}, 15]
+outer.right = 8
+outer.left = 8
 
 # 'main' binding mode declaration
 # See: https://nikitabobko.github.io/AeroSpace/guide#binding-modes
@@ -110,7 +110,7 @@ alt-i = 'exec-and-forget open -a /Applications/WezTerm.app'
 alt-s = 'exec-and-forget open -a /Applications/Slack.app'
 alt-n = 'exec-and-forget open -a /Applications/Notion.app'
 alt-p = 'exec-and-forget open -a /Applications/Postman.app'
-alt-l = 'exec-and-forget open -a /Applications/Linear.app'
+alt-q = 'exec-and-forget open -a /Applications/Linear.app'
 alt-shift-r = ['exec-and-forget /opt/homebrew/bin/sketchybar --reload']
 
 # See: https://nikitabobko.github.ioeAeroSpace/commands#layout
@@ -184,19 +184,15 @@ if.app-id ='com.google.Chrome'
 run = ['move-node-to-workspace 1']
 
 [[on-window-detected]]
-if.app-id = 'com.google.Chrome'
-run = ['move-node-to-workspace 1']
-
-[[on-window-detected]]
-if.app-id ='com.WezTerm.WezTerm'
+if.app-id ='com.github.wez.wezterm'
 run = ['move-node-to-workspace 2']
 
 [[on-window-detected]]
-if.app-id ='com.todesktop.230313mzl4w4u92'
+if.app-id ='com.tinyapp.TablePlus'
 run = ['move-node-to-workspace 3']
 
 [[on-window-detected]]
-if.app-id ='notion.id'
+if.app-id ='com.microsoft.VSCode'
 run = ['move-node-to-workspace 4']
 
 [[on-window-detected]]
@@ -204,12 +200,24 @@ if.app-id ='com.tinyspeck.slackmacgap'
 run = ['move-node-to-workspace 5']
 
 [[on-window-detected]]
-if.app-id ='com.postmanlabs.Postman'
+if.app-id ='com.linear'
 run = ['move-node-to-workspace 6']
 
 [[on-window-detected]]
-if.app-id ='com.linearstudio.linear'
+if.app-id ='com.postmanlabs.mac'
 run = ['move-node-to-workspace 7']
+
+[[on-window-detected]]
+if.app-id ='notion.id'
+run = ['move-node-to-workspace 8']
+
+[[on-window-detected]]
+if.app-id ='com.electron.dockerdesktop'
+run = ['move-node-to-workspace 9']
+
+[[on-window-detected]]
+if.app-id ='com.apple.finder'
+run = ['move-node-to-workspace F']
 
 
 # force certain workspaces to certain monitors
@@ -221,3 +229,6 @@ run = ['move-node-to-workspace 7']
 5 = 'main'
 6 = 'secondary'
 7 = 'secondary'
+8 = 'secondary'
+9 = 'secondary'
+F = 'main'
