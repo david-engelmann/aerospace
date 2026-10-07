@@ -10,9 +10,10 @@ Cmd+Alt+[Letter]         → Launch app               (e.g. Cmd+Alt+B = Chrome)
 Cmd+Alt+Shift+[Letter]   → Move window to workspace (e.g. Cmd+Alt+Shift+T = Terminal)
 Ctrl+Alt+Shift+[Letter]  → Move window and follow   (e.g. Ctrl+Alt+Shift+G = Grok Bot)
 Alt+H/J/K/L              → Focus left/down/up/right (vim-style)
-Alt+1/2/3                → Jump to Code / Slack / Dia screens
-Alt+Tab                  → Toggle last workspace
-Ctrl+Alt+/               → Enter service mode
+Alt+1/2/3                → Jump to left / middle / right monitor
+Alt+Tab                  → Previous window (or previous workspace)
+Alt+[ / Alt+]            → Prev / next occupied workspace on this monitor
+Ctrl+Alt+/               → Enter service mode (SERVICE badge shows in the bar)
 ```
 
 ---
@@ -50,9 +51,9 @@ Apps auto-assign to their workspace and monitor when opened.
 
 | Keybinding | Action |
 |---|---|
-| `Alt+1` | Jump to Code on XF273 S |
-| `Alt+2` | Jump to Slack on built-in display |
-| `Alt+3` | Jump to Dia on HP Pavilion32 |
+| `Alt+1` | Focus the Acer XF273 S (left), whatever workspace it shows |
+| `Alt+2` | Focus the built-in display (middle) |
+| `Alt+3` | Focus the HP Pavilion32 (right) |
 | `Alt+Shift+Left/Right` | Focus monitor left/right (wraps) |
 | `Cmd+Alt+Tab` | Cycle to next monitor |
 | `Cmd+Shift+Alt+Tab` | Cycle to previous monitor |
@@ -68,6 +69,8 @@ Mouse cursor follows focus automatically.
 | `Alt+K` | Focus up |
 | `Alt+L` | Focus right |
 
+At a monitor edge, focus continues into the neighbouring monitor.
+
 ### Window Cycling
 
 | Keybinding | Action |
@@ -76,6 +79,8 @@ Mouse cursor follows focus automatically.
 | `Alt+Shift+\`` | Focus previous window in workspace |
 
 ### Workspace Switching
+
+Pressing the key of the workspace you're already on jumps back to the previous one.
 
 | Keybinding | Workspace | App | Monitor |
 |---|---|---|---|
@@ -146,9 +151,8 @@ Move windows with `Ctrl+Alt+H/J/K/L` (same directions as focus).
 
 | Keybinding | Action |
 |---|---|
-| `Alt+Tab` | Toggle between last two workspaces |
+| `Alt+Tab` | Previous window, across workspaces/monitors (falls back to previous workspace) |
 | `Alt+[` / `Alt+]` | Previous / next occupied workspace on this monitor (wraps) |
-| `Alt+Shift+Tab` | Move current workspace to next monitor |
 
 ---
 
@@ -160,11 +164,14 @@ Press `Ctrl+Alt+/` to enter service mode, then:
 |---|---|
 | `Esc` | Reload config & exit |
 | `R` | Reset/flatten workspace layout |
+| `A` | Arrange: re-sort every open window to its app's workspace |
 | `F` | Toggle floating/tiling |
 | `Backspace` | Close all windows except current |
 | `Ctrl+Alt+H/J/K/L` | Join window with neighbor |
 
-All commands auto-return to main mode.
+All commands auto-return to main mode. While in service mode, a SERVICE badge shows in the bar.
+
+Calculator, Raycast, Archive Utility and Installer windows float wherever they open.
 
 ---
 
@@ -290,12 +297,11 @@ Requires AeroSpace 0.21+ (`config-version = 2`, new `on-window-detected` syntax)
 
 Monitor name patterns are more stable than macOS display numbers. If apps go to the wrong screen:
 
-1. Open System Settings > Displays > Arrangement
-2. Confirm `HP Pavilion32` is the Dia/main display
-3. Check `aerospace list-monitors` for the exact Acer and HP Pavilion names (`XF273 S`, `HP Pavilion32`)
-4. Update `[workspace-to-monitor-force-assignment]` in `aerospace.toml`
-5. Update the `workspace_display()` function in `sketchybarrc` to match
-6. Reload both configs
+1. Check `aerospace list-monitors` for the exact Acer and HP Pavilion names (`XF273 S`, `HP Pavilion32`)
+2. Update `[workspace-to-monitor-force-assignment]` in `aerospace.toml` (saving auto-reloads)
+3. Re-sort open windows: `Ctrl+Alt+/` then `A`
+4. Reload the bar (`Cmd+Alt+R`) — `items/spaces.sh` maps workspaces to bars automatically
+   via `aerospace list-monitors --format '%{monitor-id} %{monitor-appkit-nsscreen-screens-id}'`
 
 ### SketchyBar Icons Not Updating
 

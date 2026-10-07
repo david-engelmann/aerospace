@@ -7,11 +7,14 @@ config-version = 2
 # Reload automatically whenever this file is saved
 auto-reload-config = true
 
-# Borders (JankyBorders) runs as a brew service: ~/.config/borders/bordersrc
+# Borders (JankyBorders) runs from ~/Library/LaunchAgents/local.borders.plist
+# (config: ~/.config/borders/bordersrc), so it restarts itself if it dies.
 after-startup-command = [
     # Sketchybar's LaunchAgent can win the race at login and build the bar before
     # AeroSpace is up (no workspace items). Rebuild it once the server is ready.
-    'exec-and-forget /opt/homebrew/bin/sketchybar --reload'
+    'exec-and-forget /opt/homebrew/bin/sketchybar --reload',
+    # Apply the app→workspace rules to windows that were already open at startup
+    'run-callback --for-every-window on-window-detected',
 ]
 
 start-at-login = true
@@ -49,9 +52,18 @@ exec-on-workspace-change = ['/bin/bash', '-c', 'sketchybar --trigger aerospace_w
 # The script is locked + debounced, so frequent firing is cheap.
 on-focus-changed = ['exec-and-forget ~/.config/sketchybar/plugins/update_workspace_icon.sh']
 
+# Show a SERVICE badge in the bar while a non-main binding mode is active
+on-mode-changed = ['exec-and-forget ~/.config/sketchybar/plugins/aerospace_mode.sh']
+
 # ── Auto-assign apps to workspaces ──
 # First match wins. `||` groups several apps onto one workspace.
 on-window-detected = [
+    # Utilities float on the current workspace instead of being tiled/pinned
+    {
+        if = 'test %{app-bundle-id} = com.apple.calculator || test %{app-bundle-id} = com.raycast.macos || test %{app-bundle-id} = com.apple.archiveutility || test %{app-bundle-id} = com.apple.installer',
+        run = 'layout floating',
+    },
+
     # Browser monitor (HP)
     { if = 'test %{app-bundle-id} = com.google.Chrome', run = 'move-node-to-workspace B' },
     { if = 'test %{app-bundle-id} = company.thebrowser.dia', run = 'move-node-to-workspace A' },
@@ -81,10 +93,13 @@ on-window-detected = [
         if = 'test %{app-bundle-id} = com.apple.finder || test %{app-bundle-id} = com.apple.Preview',
         run = 'move-node-to-workspace F',
     },
-    { if = 'test %{app-bundle-id} = com.apple.systempreferences', run = 'move-node-to-workspace E' },
     {
-        # AI coding agents: Codex, Claude, Kimi Code, zcode
-        if = 'test %{app-bundle-id} = com.openai.codex || test %{app-bundle-id} = com.anthropic.claudefordesktop || test %{app-bundle-id} = com.kimi.code.desktop || test %{app-bundle-id} = dev.zcode.app',
+        if = 'test %{app-bundle-id} = com.apple.systempreferences || test %{app-bundle-id} = com.apple.printcenter',
+        run = 'move-node-to-workspace E',
+    },
+    {
+        # AI coding agents: Codex, Claude, Kimi Code, zcode, MiniMax Code
+        if = 'test %{app-bundle-id} = com.openai.codex || test %{app-bundle-id} = com.anthropic.claudefordesktop || test %{app-bundle-id} = com.kimi.code.desktop || test %{app-bundle-id} = dev.zcode.app || test %{app-bundle-id} = com.minimax.agent',
         run = 'move-node-to-workspace O',
     },
     { if = 'test %{app-bundle-id} = md.obsidian', run = 'move-node-to-workspace V' },
@@ -108,9 +123,10 @@ outer.left = [{ monitor.'built-in' = 2 }, 6]
 [mode.main.binding]
 
 # ── Monitor Anchors (mouse follows) ──
-alt-1 = ['workspace C', 'move-mouse monitor-lazy-center']
-alt-2 = ['workspace S', 'move-mouse monitor-lazy-center']
-alt-3 = ['workspace A', 'move-mouse monitor-lazy-center']
+# ⌥1/2/3 = left/middle/right monitor, landing on whatever workspace is showing there
+alt-1 = ['focus-monitor XF273', 'move-mouse monitor-lazy-center']
+alt-2 = ['focus-monitor built-in', 'move-mouse monitor-lazy-center']
+alt-3 = ['focus-monitor Pavilion', 'move-mouse monitor-lazy-center']
 alt-shift-left = ['focus-monitor --wrap-around left', 'move-mouse monitor-lazy-center']
 alt-shift-right = ['focus-monitor --wrap-around right', 'move-mouse monitor-lazy-center']
 cmd-alt-tab = ['focus-monitor --wrap-around next', 'move-mouse monitor-lazy-center']
@@ -132,11 +148,11 @@ cmd-alt-q = 'exec-and-forget open -a "LM Studio"'
 cmd-alt-v = 'exec-and-forget open -a "Obsidian"'
 cmd-alt-r = ['exec-and-forget /opt/homebrew/bin/sketchybar --reload']
 
-# ── Window Focus (Vim-style) ──
-alt-h = 'focus left'
-alt-j = 'focus down'
-alt-k = 'focus up'
-alt-l = 'focus right'
+# ── Window Focus (Vim-style, crosses into the neighbouring monitor at the edge) ──
+alt-h = 'focus --boundaries all-monitors-outer-frame left'
+alt-j = 'focus --boundaries all-monitors-outer-frame down'
+alt-k = 'focus --boundaries all-monitors-outer-frame up'
+alt-l = 'focus --boundaries all-monitors-outer-frame right'
 
 # ── Cycle Windows in Workspace (like Cmd+` but for tiling) ──
 alt-backtick = 'focus dfs-next --boundaries-action wrap-around-the-workspace'
@@ -158,25 +174,25 @@ ctrl-alt-l = 'move right'
 alt-minus = 'resize smart -50'
 alt-equal = 'resize smart +50'
 
-# ── Workspace Switching (Alt+Shift+Letter, mouse follows if monitor changes) ──
-alt-shift-b = ['workspace B', 'move-mouse monitor-lazy-center']
-alt-shift-c = ['workspace C', 'move-mouse monitor-lazy-center']
-alt-shift-t = ['workspace T', 'move-mouse monitor-lazy-center']
-alt-shift-d = ['workspace D', 'move-mouse monitor-lazy-center']
-alt-shift-g = ['workspace G', 'move-mouse monitor-lazy-center']
-alt-shift-p = ['workspace P', 'move-mouse monitor-lazy-center']
-alt-shift-j = ['workspace J', 'move-mouse monitor-lazy-center']
-alt-shift-s = ['workspace S', 'move-mouse monitor-lazy-center']
-alt-shift-n = ['workspace N', 'move-mouse monitor-lazy-center']
-alt-shift-k = ['workspace K', 'move-mouse monitor-lazy-center']
-alt-shift-f = ['workspace F', 'move-mouse monitor-lazy-center']
-alt-shift-m = ['workspace M', 'move-mouse monitor-lazy-center']
-alt-shift-a = ['workspace A', 'move-mouse monitor-lazy-center']
-alt-shift-e = ['workspace E', 'move-mouse monitor-lazy-center']
-alt-shift-o = ['workspace O', 'move-mouse monitor-lazy-center']
-alt-shift-w = ['workspace W', 'move-mouse monitor-lazy-center']
-alt-shift-q = ['workspace Q', 'move-mouse monitor-lazy-center']
-alt-shift-v = ['workspace V', 'move-mouse monitor-lazy-center']
+# ── Workspace Switching (Alt+Shift+Letter, mouse follows; press again to jump back) ──
+alt-shift-b = ['workspace --auto-back-and-forth B', 'move-mouse monitor-lazy-center']
+alt-shift-c = ['workspace --auto-back-and-forth C', 'move-mouse monitor-lazy-center']
+alt-shift-t = ['workspace --auto-back-and-forth T', 'move-mouse monitor-lazy-center']
+alt-shift-d = ['workspace --auto-back-and-forth D', 'move-mouse monitor-lazy-center']
+alt-shift-g = ['workspace --auto-back-and-forth G', 'move-mouse monitor-lazy-center']
+alt-shift-p = ['workspace --auto-back-and-forth P', 'move-mouse monitor-lazy-center']
+alt-shift-j = ['workspace --auto-back-and-forth J', 'move-mouse monitor-lazy-center']
+alt-shift-s = ['workspace --auto-back-and-forth S', 'move-mouse monitor-lazy-center']
+alt-shift-n = ['workspace --auto-back-and-forth N', 'move-mouse monitor-lazy-center']
+alt-shift-k = ['workspace --auto-back-and-forth K', 'move-mouse monitor-lazy-center']
+alt-shift-f = ['workspace --auto-back-and-forth F', 'move-mouse monitor-lazy-center']
+alt-shift-m = ['workspace --auto-back-and-forth M', 'move-mouse monitor-lazy-center']
+alt-shift-a = ['workspace --auto-back-and-forth A', 'move-mouse monitor-lazy-center']
+alt-shift-e = ['workspace --auto-back-and-forth E', 'move-mouse monitor-lazy-center']
+alt-shift-o = ['workspace --auto-back-and-forth O', 'move-mouse monitor-lazy-center']
+alt-shift-w = ['workspace --auto-back-and-forth W', 'move-mouse monitor-lazy-center']
+alt-shift-q = ['workspace --auto-back-and-forth Q', 'move-mouse monitor-lazy-center']
+alt-shift-v = ['workspace --auto-back-and-forth V', 'move-mouse monitor-lazy-center']
 
 # ── Move Window to Workspace (Cmd+Alt+Shift+Letter) ──
 cmd-alt-shift-b = 'move-node-to-workspace B'
@@ -199,31 +215,32 @@ cmd-alt-shift-q = 'move-node-to-workspace Q'
 cmd-alt-shift-v = 'move-node-to-workspace V'
 
 # ── Move Window AND Follow (Ctrl+Alt+Shift+Letter) ──
-ctrl-alt-shift-b = ['move-node-to-workspace B', 'workspace B', 'move-mouse monitor-lazy-center']
-ctrl-alt-shift-c = ['move-node-to-workspace C', 'workspace C', 'move-mouse monitor-lazy-center']
-ctrl-alt-shift-t = ['move-node-to-workspace T', 'workspace T', 'move-mouse monitor-lazy-center']
-ctrl-alt-shift-d = ['move-node-to-workspace D', 'workspace D', 'move-mouse monitor-lazy-center']
-ctrl-alt-shift-g = ['move-node-to-workspace G', 'workspace G', 'move-mouse monitor-lazy-center']
-ctrl-alt-shift-p = ['move-node-to-workspace P', 'workspace P', 'move-mouse monitor-lazy-center']
-ctrl-alt-shift-j = ['move-node-to-workspace J', 'workspace J', 'move-mouse monitor-lazy-center']
-ctrl-alt-shift-s = ['move-node-to-workspace S', 'workspace S', 'move-mouse monitor-lazy-center']
-ctrl-alt-shift-n = ['move-node-to-workspace N', 'workspace N', 'move-mouse monitor-lazy-center']
-ctrl-alt-shift-k = ['move-node-to-workspace K', 'workspace K', 'move-mouse monitor-lazy-center']
-ctrl-alt-shift-f = ['move-node-to-workspace F', 'workspace F', 'move-mouse monitor-lazy-center']
-ctrl-alt-shift-m = ['move-node-to-workspace M', 'workspace M', 'move-mouse monitor-lazy-center']
-ctrl-alt-shift-a = ['move-node-to-workspace A', 'workspace A', 'move-mouse monitor-lazy-center']
-ctrl-alt-shift-e = ['move-node-to-workspace E', 'workspace E', 'move-mouse monitor-lazy-center']
-ctrl-alt-shift-o = ['move-node-to-workspace O', 'workspace O', 'move-mouse monitor-lazy-center']
-ctrl-alt-shift-w = ['move-node-to-workspace W', 'workspace W', 'move-mouse monitor-lazy-center']
-ctrl-alt-shift-q = ['move-node-to-workspace Q', 'workspace Q', 'move-mouse monitor-lazy-center']
-ctrl-alt-shift-v = ['move-node-to-workspace V', 'workspace V', 'move-mouse monitor-lazy-center']
+ctrl-alt-shift-b = ['move-node-to-workspace --focus-follows-window B', 'move-mouse monitor-lazy-center']
+ctrl-alt-shift-c = ['move-node-to-workspace --focus-follows-window C', 'move-mouse monitor-lazy-center']
+ctrl-alt-shift-t = ['move-node-to-workspace --focus-follows-window T', 'move-mouse monitor-lazy-center']
+ctrl-alt-shift-d = ['move-node-to-workspace --focus-follows-window D', 'move-mouse monitor-lazy-center']
+ctrl-alt-shift-g = ['move-node-to-workspace --focus-follows-window G', 'move-mouse monitor-lazy-center']
+ctrl-alt-shift-p = ['move-node-to-workspace --focus-follows-window P', 'move-mouse monitor-lazy-center']
+ctrl-alt-shift-j = ['move-node-to-workspace --focus-follows-window J', 'move-mouse monitor-lazy-center']
+ctrl-alt-shift-s = ['move-node-to-workspace --focus-follows-window S', 'move-mouse monitor-lazy-center']
+ctrl-alt-shift-n = ['move-node-to-workspace --focus-follows-window N', 'move-mouse monitor-lazy-center']
+ctrl-alt-shift-k = ['move-node-to-workspace --focus-follows-window K', 'move-mouse monitor-lazy-center']
+ctrl-alt-shift-f = ['move-node-to-workspace --focus-follows-window F', 'move-mouse monitor-lazy-center']
+ctrl-alt-shift-m = ['move-node-to-workspace --focus-follows-window M', 'move-mouse monitor-lazy-center']
+ctrl-alt-shift-a = ['move-node-to-workspace --focus-follows-window A', 'move-mouse monitor-lazy-center']
+ctrl-alt-shift-e = ['move-node-to-workspace --focus-follows-window E', 'move-mouse monitor-lazy-center']
+ctrl-alt-shift-o = ['move-node-to-workspace --focus-follows-window O', 'move-mouse monitor-lazy-center']
+ctrl-alt-shift-w = ['move-node-to-workspace --focus-follows-window W', 'move-mouse monitor-lazy-center']
+ctrl-alt-shift-q = ['move-node-to-workspace --focus-follows-window Q', 'move-mouse monitor-lazy-center']
+ctrl-alt-shift-v = ['move-node-to-workspace --focus-follows-window V', 'move-mouse monitor-lazy-center']
 
 # ── Workspace Utilities ──
 # Step through occupied workspaces on the current monitor (⌥[ / ⌥])
 alt-leftSquareBracket = 'list-workspaces --monitor focused --empty no | workspace --wrap-around --stdin prev'
 alt-rightSquareBracket = 'list-workspaces --monitor focused --empty no | workspace --wrap-around --stdin next'
-alt-tab = ['workspace-back-and-forth', 'move-mouse monitor-lazy-center']
-alt-shift-tab = 'move-workspace-to-monitor --wrap-around next'
+# Previous window (across workspaces/monitors); falls back to previous workspace
+alt-tab = 'focus-back-and-forth || workspace-back-and-forth; move-mouse monitor-lazy-center'
+# (move-workspace-to-monitor is a no-op here: every workspace is force-assigned to a monitor)
 
 # ── Service Mode ──
 ctrl-alt-slash = 'mode service'
@@ -233,6 +250,7 @@ ctrl-alt-slash = 'mode service'
 [mode.service.binding]
 esc = ['reload-config', 'mode main']
 r = ['flatten-workspace-tree', 'mode main'] # reset layout
+a = ['run-callback --for-every-window on-window-detected', 'mode main'] # re-sort every window to its app's workspace
 f = ['layout floating tiling', 'mode main'] # Toggle between floating and tiling layout
 backspace = ['close-all-windows-but-current', 'mode main']
 
