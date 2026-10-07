@@ -1,13 +1,27 @@
 # AeroSpace Window Manager Configuration
 # See full docs: https://nikitabobko.github.io/AeroSpace/
+# Requires AeroSpace 0.21+ (config-version 2, TOML 1.1 multiline inline tables)
 
-after-login-command = []
+config-version = 2
 
+# Reload automatically whenever this file is saved
+auto-reload-config = true
+
+# Borders (JankyBorders) runs as a brew service: ~/.config/borders/bordersrc
 after-startup-command = [
-    'exec-and-forget borders active_color=0xffb4befe inactive_color=0xff45475a width=5.0'
+    # Sketchybar's LaunchAgent can win the race at login and build the bar before
+    # AeroSpace is up (no workspace items). Rebuild it once the server is ready.
+    'exec-and-forget /opt/homebrew/bin/sketchybar --reload'
 ]
 
 start-at-login = true
+
+# All workspaces always exist, so the bar shows every slot even when empty
+persistent-workspaces = [
+    'B', 'D', 'P', 'A', 'W', 'Q',           # HP Pavilion32
+    'S', 'J', 'N', 'M', 'F', 'E', 'O', 'V', # built-in
+    'C', 'T', 'K', 'G',                     # Acer XF273 S
+]
 
 # Normalizations
 enable-normalization-flatten-containers = true
@@ -27,8 +41,54 @@ default-root-container-orientation = 'auto'
 # Prevent cmd-h from hiding apps (common accidental press)
 automatically-unhide-macos-hidden-apps = true
 
-# Notify Sketchybar about workspace change and update icons
-exec-on-workspace-change = ['/bin/bash', '-c', 'sketchybar --trigger aerospace_workspace_change FOCUSED_WORKSPACE=$AEROSPACE_FOCUSED_WORKSPACE PREV_WORKSPACE=$AEROSPACE_PREV_WORKSPACE && ~/.config/sketchybar/plugins/update_workspace_icon.sh']
+# Notify Sketchybar about workspace change (highlights the focused workspace)
+exec-on-workspace-change = ['/bin/bash', '-c', 'sketchybar --trigger aerospace_workspace_change FOCUSED_WORKSPACE=$AEROSPACE_FOCUSED_WORKSPACE PREV_WORKSPACE=$AEROSPACE_PREV_WORKSPACE']
+
+# Refresh bar app icons whenever focus changes — covers workspace switches,
+# windows opening/closing, and windows sent to other workspaces.
+# The script is locked + debounced, so frequent firing is cheap.
+on-focus-changed = ['exec-and-forget ~/.config/sketchybar/plugins/update_workspace_icon.sh']
+
+# ── Auto-assign apps to workspaces ──
+# First match wins. `||` groups several apps onto one workspace.
+on-window-detected = [
+    # Browser monitor (HP)
+    { if = 'test %{app-bundle-id} = com.google.Chrome', run = 'move-node-to-workspace B' },
+    { if = 'test %{app-bundle-id} = company.thebrowser.dia', run = 'move-node-to-workspace A' },
+    { if = 'test %{app-bundle-id} = com.tinyapp.TablePlus', run = 'move-node-to-workspace D' },
+    { if = 'test %{app-bundle-id} = com.postmanlabs.mac', run = 'move-node-to-workspace P' },
+    { if = 'test %{app-bundle-id} = dev.commandline.waveterm', run = 'move-node-to-workspace W' },
+    { if = 'test %{app-bundle-id} = ai.elementlabs.lmstudio', run = 'move-node-to-workspace Q' },
+
+    # Dev monitor (Acer)
+    { if = 'test %{app-bundle-id} = com.microsoft.VSCode', run = 'move-node-to-workspace C' },
+    {
+        if = 'test %{app-bundle-id} = com.github.wez.wezterm || test %{app-bundle-id} = dev.warp.Warp-Stable',
+        run = 'move-node-to-workspace T',
+    },
+    { if = 'test %{app-bundle-id} = com.electron.dockerdesktop', run = 'move-node-to-workspace K' },
+    { if = 'test %{app-bundle-id} = com.anysphere.sand', run = 'move-node-to-workspace G' },
+
+    # Comms / tools monitor (built-in)
+    { if = 'test %{app-bundle-id} = com.tinyspeck.slackmacgap', run = 'move-node-to-workspace S' },
+    {
+        if = 'test %{app-bundle-id} = com.linear || test %{app-bundle-id} = com.apple.iCal',
+        run = 'move-node-to-workspace J',
+    },
+    { if = 'test %{app-bundle-id} = notion.id', run = 'move-node-to-workspace N' },
+    { if = 'test %{app-bundle-id} = com.spotify.client', run = 'move-node-to-workspace M' },
+    {
+        if = 'test %{app-bundle-id} = com.apple.finder || test %{app-bundle-id} = com.apple.Preview',
+        run = 'move-node-to-workspace F',
+    },
+    { if = 'test %{app-bundle-id} = com.apple.systempreferences', run = 'move-node-to-workspace E' },
+    {
+        # AI coding agents: Codex, Claude, Kimi Code, zcode
+        if = 'test %{app-bundle-id} = com.openai.codex || test %{app-bundle-id} = com.anthropic.claudefordesktop || test %{app-bundle-id} = com.kimi.code.desktop || test %{app-bundle-id} = dev.zcode.app',
+        run = 'move-node-to-workspace O',
+    },
+    { if = 'test %{app-bundle-id} = md.obsidian', run = 'move-node-to-workspace V' },
+]
 
 # Possible values: (qwerty|dvorak)
 # See https://nikitabobko.github.io/AeroSpace/guide#key-mapping
@@ -159,6 +219,9 @@ ctrl-alt-shift-q = ['move-node-to-workspace Q', 'workspace Q', 'move-mouse monit
 ctrl-alt-shift-v = ['move-node-to-workspace V', 'workspace V', 'move-mouse monitor-lazy-center']
 
 # ── Workspace Utilities ──
+# Step through occupied workspaces on the current monitor (⌥[ / ⌥])
+alt-leftSquareBracket = 'list-workspaces --monitor focused --empty no | workspace --wrap-around --stdin prev'
+alt-rightSquareBracket = 'list-workspaces --monitor focused --empty no | workspace --wrap-around --stdin next'
 alt-tab = ['workspace-back-and-forth', 'move-mouse monitor-lazy-center']
 alt-shift-tab = 'move-workspace-to-monitor --wrap-around next'
 
@@ -205,77 +268,3 @@ C = ['XF273 S', 'acer', 1]
 T = ['XF273 S', 'acer', 1]
 K = ['XF273 S', 'acer', 1]
 G = ['XF273 S', 'acer', 1]
-
-# ── Auto-assign apps to workspaces ──
-
-[[on-window-detected]]
-if.app-id = 'com.google.Chrome'
-run = ['move-node-to-workspace B']
-
-[[on-window-detected]]
-if.app-id = 'company.thebrowser.dia'
-run = ['move-node-to-workspace A']
-
-[[on-window-detected]]
-if.app-id = 'com.anysphere.sand'
-run = ['move-node-to-workspace G']
-
-[[on-window-detected]]
-if.app-id = 'com.github.wez.wezterm'
-run = ['move-node-to-workspace T']
-
-[[on-window-detected]]
-if.app-id = 'com.tinyapp.TablePlus'
-run = ['move-node-to-workspace D']
-
-[[on-window-detected]]
-if.app-id = 'com.microsoft.VSCode'
-run = ['move-node-to-workspace C']
-
-[[on-window-detected]]
-if.app-id = 'com.tinyspeck.slackmacgap'
-run = ['move-node-to-workspace S']
-
-[[on-window-detected]]
-if.app-id = 'com.linear'
-run = ['move-node-to-workspace J']
-
-[[on-window-detected]]
-if.app-id = 'com.postmanlabs.mac'
-run = ['move-node-to-workspace P']
-
-[[on-window-detected]]
-if.app-id = 'notion.id'
-run = ['move-node-to-workspace N']
-
-[[on-window-detected]]
-if.app-id = 'com.electron.dockerdesktop'
-run = ['move-node-to-workspace K']
-
-[[on-window-detected]]
-if.app-id = 'com.apple.finder'
-run = ['move-node-to-workspace F']
-
-[[on-window-detected]]
-if.app-id = 'com.apple.systempreferences'
-run = ['move-node-to-workspace E']
-
-[[on-window-detected]]
-if.app-id = 'com.spotify.client'
-run = ['move-node-to-workspace M']
-
-[[on-window-detected]]
-if.app-id = 'com.openai.codex'
-run = ['move-node-to-workspace O']
-
-[[on-window-detected]]
-if.app-id = 'dev.commandline.waveterm'
-run = ['move-node-to-workspace W']
-
-[[on-window-detected]]
-if.app-id = 'ai.elementlabs.lmstudio'
-run = ['move-node-to-workspace Q']
-
-[[on-window-detected]]
-if.app-id = 'md.obsidian'
-run = ['move-node-to-workspace V']

@@ -27,12 +27,13 @@ Apps auto-assign to their workspace and monitor when opened.
 │  Main + Tools        │  │  Development         │  │  Comms & Planning    │
 │                      │  │                      │  │                      │
 │  A  Dia (AI)         │  │  C  VS Code          │  │  S  Slack            │
-│  B  Browser          │  │  T  WezTerm          │  │  J  Linear (Jira)    │
+│  B  Browser          │  │  T  WezTerm, Warp    │  │  J  Linear, Calendar │
 │  D  Database         │  │  K  Docker           │  │  N  Notion           │
 │  P  Postman          │  │  G  Grok Bot         │  │  M  Spotify (Music)  │
-│  W  Wave             │  │                      │  │  F  Finder           │
+│  W  Wave             │  │                      │  │  F  Finder, Preview  │
 │  Q  LM Studio        │  │                      │  │  E  Settings         │
-│                      │  │                      │  │  O  Codex            │
+│                      │  │                      │  │  O  Codex, Claude,   │
+│                      │  │                      │  │     Kimi, zcode      │
 │                      │  │                      │  │  V  Obsidian         │
 └──────────────────────┘  └──────────────────────┘  └──────────────────────┘
 ```
@@ -146,6 +147,7 @@ Move windows with `Ctrl+Alt+H/J/K/L` (same directions as focus).
 | Keybinding | Action |
 |---|---|
 | `Alt+Tab` | Toggle between last two workspaces |
+| `Alt+[` / `Alt+]` | Previous / next occupied workspace on this monitor (wraps) |
 | `Alt+Shift+Tab` | Move current workspace to next monitor |
 
 ---
@@ -225,7 +227,7 @@ This setup uses the following tools together:
 |---|---|---|
 | [AeroSpace](https://github.com/nikitabobko/AeroSpace) | Tiling window manager | `~/.config/aerospace/` |
 | [SketchyBar](https://github.com/FelixKratz/SketchyBar) | Custom macOS menu bar | `~/.config/sketchybar/` |
-| [JankyBorders](https://github.com/FelixKratz/JankyBorders) | Window border highlights | Launched via aerospace startup |
+| [JankyBorders](https://github.com/FelixKratz/JankyBorders) | Window border highlights | `~/.config/borders/bordersrc`, kept alive by `~/Library/LaunchAgents/local.borders.plist` |
 | [Neovim](https://neovim.io/) | Terminal editor | `~/.config/nvim/` |
 | [WezTerm](https://wezfurlong.org/wezterm/) | GPU-accelerated terminal | — |
 
@@ -274,9 +276,11 @@ brew install --cask font-hack-nerd-font
 
 ### Reload After Changes
 
-- **AeroSpace**: `Ctrl+Alt+/` then `Esc` (service mode reload)
+- **AeroSpace**: automatic on save (`auto-reload-config`); manual: `Ctrl+Alt+/` then `Esc`
 - **SketchyBar**: `Cmd+Alt+R` or `sketchybar --reload`
-- **Borders**: Restart AeroSpace (borders launch via `after-startup-command`)
+- **Borders**: `launchctl kickstart -k gui/$(id -u)/local.borders`
+
+Requires AeroSpace 0.21+ (`config-version = 2`, new `on-window-detected` syntax).
 
 ---
 
@@ -303,6 +307,19 @@ sketchybar --reload
 chmod +x ~/.config/sketchybar/plugins/*.sh
 ```
 
+### Everything Stops Responding (keys, pickers, bar)
+
+The AeroSpace server has stalled. Check:
+
+```bash
+perl -e 'alarm 3; exec @ARGV' aerospace list-workspaces --focused || echo "server stalled"
+pgrep -f '^aerospace ' | wc -l   # stuck CLI clients piling up
+```
+
+If it's stalled, quit and reopen AeroSpace (`osascript -e 'quit app "AeroSpace"'`, then
+`open -a AeroSpace`; if the quit hangs, `pkill -x AeroSpace` first). Every script that calls the
+`aerospace` CLI should wrap it in a timeout like the one above, so a stall can't pile up processes.
+
 ### Layout Feels Broken/Jumpy
 
 ```
@@ -318,4 +335,8 @@ To add a new app to auto-assign:
 osascript -e 'id of app "AppName"'
 ```
 
-Then add an `[[on-window-detected]]` block in `aerospace.toml`.
+Then add an entry to the `on-window-detected` list in `aerospace.toml`:
+
+```toml
+{ if = 'test %{app-bundle-id} = com.example.app', run = 'move-node-to-workspace X' },
+```
