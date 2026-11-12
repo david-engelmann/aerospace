@@ -21,6 +21,8 @@ after-startup-command = [
     # Known-good state: no native fullscreen, every window on its app's
     # workspace, one window at a time everywhere. See arrange.sh.
     'exec-and-forget ~/.config/aerospace/arrange.sh',
+    # ...and once more after the apps macOS reopens at login have their windows
+    'exec-and-forget ~/.config/aerospace/arrange.sh 30',
 ]
 
 start-at-login = true
@@ -187,9 +189,8 @@ alt-l = 'focus --boundaries all-monitors-outer-frame right'
 
 # ── Layout of the current workspace ──
 alt-e = 'layout tiles horizontal vertical'         # side by side
-alt-comma = 'layout accordion horizontal vertical' # back to one at a time
+alt-comma = 'layout accordion'                     # back to one at a time
 alt-w = 'fullscreen'
-alt-y = ['focus right', 'join-with down', 'layout tiles horizontal']
 ctrl-alt-h = 'move left'
 ctrl-alt-j = 'move down'
 ctrl-alt-k = 'move up'

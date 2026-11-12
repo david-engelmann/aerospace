@@ -23,7 +23,7 @@ There are three layers and nothing else to learn.
 
 | ⌥ key | What it does |
 | --- | --- |
-| ⌥\` | Next window of this app (⇧⌥\` for previous) |
+| ⌥\` | Next window in this workspace, which is usually the next window of this app (⇧⌥\` for previous) |
 | ⌥Space | Find any window by typing its name (Raycast Switch Windows) |
 | ⌥Tab | Back to the window you were just in |
 | ⌥[ / ⌥] | Previous / next workspace that has windows |
@@ -124,7 +124,7 @@ Press **⌃⌥/**, then one key. It returns to normal by itself.
 | Keys do nothing | Run `aerospace list-workspaces --focused`. If it hangs: `pkill -x AeroSpace; open -a AeroSpace` |
 | ⌥Space does nothing | Open Raycast, run "Switch Windows" once, and choose **Always Run Command** when asked |
 | Bar looks stale | ⌃⌥/ then B |
-| Focus jumps to Slack by itself | Known AeroSpace bug (#1939); no config fix |
+| Focus jumps to Slack by itself | Known AeroSpace problem ([discussion 1939](https://github.com/nikitabobko/AeroSpace/discussions/1939)); no config fix |
 
 ## How it's wired
 
