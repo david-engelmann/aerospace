@@ -1,348 +1,164 @@
-# AeroSpace + SketchyBar Tiling Window Manager Setup
-
-A mnemonic-based workspace system with automatic app placement, multi-monitor support, and a live status bar showing workspace icons.
-
-## Quick Reference
-
-```
-Alt+Shift+[Letter]       → Switch to workspace      (e.g. Alt+Shift+C = Code)
-Cmd+Alt+[Letter]         → Launch app               (e.g. Cmd+Alt+B = Chrome)
-Cmd+Alt+Shift+[Letter]   → Move window to workspace (e.g. Cmd+Alt+Shift+T = Terminal)
-Ctrl+Alt+Shift+[Letter]  → Move window and follow   (e.g. Ctrl+Alt+Shift+G = Grok Bot)
-Alt+H/J/K/L              → Focus left/down/up/right (vim-style)
-Alt+1/2/3                → Jump to left / middle / right monitor
-Alt+Tab                  → Previous window (or previous workspace)
-Alt+[ / Alt+]            → Prev / next occupied workspace on this monitor
-Ctrl+Alt+/               → Enter service mode (SERVICE badge shows in the bar)
-```
-
----
-
-## Monitor Layout
-
-Apps auto-assign to their workspace and monitor when opened.
-
-```
-┌──────────────────────┐  ┌──────────────────────┐  ┌──────────────────────┐
-│  HP Pavilion32       │  │  XF273 S (Vertical)  │  │  Built-in Retina     │
-│  Main + Tools        │  │  Development         │  │  Comms & Planning    │
-│                      │  │                      │  │                      │
-│  A  Dia (AI)         │  │  C  VS Code          │  │  S  Slack            │
-│  B  Browser          │  │  T  WezTerm, Warp    │  │  J  Linear, Calendar │
-│  D  Database         │  │  K  Docker           │  │  N  Notion           │
-│  P  Postman          │  │  G  Grok Bot         │  │  M  Spotify (Music)  │
-│  W  Wave             │  │                      │  │  F  Finder, Preview  │
-│  Q  LM Studio        │  │                      │  │  E  Settings         │
-│                      │  │                      │  │  O  Codex, Claude,   │
-│                      │  │                      │  │     Kimi, zcode      │
-│                      │  │                      │  │  V  Obsidian         │
-└──────────────────────┘  └──────────────────────┘  └──────────────────────┘
-```
-
-> **Note**: Workspace routing uses monitor name patterns first (`HP Pavilion32`,
-> `XF273 S`, `built-in`) because macOS can renumber displays after hardware changes.
-> The numeric entries in `[workspace-to-monitor-force-assignment]` are fallbacks.
-
----
-
-## Keybindings
-
-### Monitor Anchors & Navigation
-
-| Keybinding | Action |
-|---|---|
-| `Alt+1` | Focus the Acer XF273 S (left), whatever workspace it shows |
-| `Alt+2` | Focus the built-in display (middle) |
-| `Alt+3` | Focus the HP Pavilion32 (right) |
-| `Alt+Shift+Left/Right` | Focus monitor left/right (wraps) |
-| `Cmd+Alt+Tab` | Cycle to next monitor |
-| `Cmd+Shift+Alt+Tab` | Cycle to previous monitor |
-
-Mouse cursor follows focus automatically.
-
-### Window Focus (Vim-style)
-
-| Keybinding | Action |
-|---|---|
-| `Alt+H` | Focus left |
-| `Alt+J` | Focus down |
-| `Alt+K` | Focus up |
-| `Alt+L` | Focus right |
-
-At a monitor edge, focus continues into the neighbouring monitor.
-
-### Window Cycling
-
-| Keybinding | Action |
-|---|---|
-| `Alt+\`` | Focus next window in workspace |
-| `Alt+Shift+\`` | Focus previous window in workspace |
-
-### Workspace Switching
-
-Pressing the key of the workspace you're already on jumps back to the previous one.
-
-| Keybinding | Workspace | App | Monitor |
-|---|---|---|---|
-| `Alt+Shift+B` | **B**rowser | Chrome | HP Pavilion32 |
-| `Alt+Shift+C` | **C**ode | VS Code | XF273 S |
-| `Alt+Shift+T` | **T**erminal | WezTerm | XF273 S |
-| `Alt+Shift+D` | **D**atabase | TablePlus | HP Pavilion32 |
-| `Alt+Shift+G` | **G**rok Bot | Grok Bot | XF273 S |
-| `Alt+Shift+P` | **P**ostman | Postman | HP Pavilion32 |
-| `Alt+Shift+J` | **J**ira | Linear | Built-in |
-| `Alt+Shift+S` | **S**lack | Slack | Built-in |
-| `Alt+Shift+N` | **N**otion | Notion | Built-in |
-| `Alt+Shift+K` | **K**ubernetes | Docker | XF273 S |
-| `Alt+Shift+F` | **F**inder | Finder | Built-in |
-| `Alt+Shift+M` | **M**usic | Spotify | Built-in |
-| `Alt+Shift+A` | **A**I | Dia | HP Pavilion32 |
-| `Alt+Shift+E` | pr**E**ferences | System Settings | Built-in |
-| `Alt+Shift+O` | c**O**dex | Codex | Built-in |
-| `Alt+Shift+W` | **W**ave | Wave | HP Pavilion32 |
-| `Alt+Shift+Q` | LM (**Q**) | LM Studio | HP Pavilion32 |
-| `Alt+Shift+V` | Obsidian **V**ault | Obsidian | Built-in |
+# AeroSpace setup
+
+One config that works the same on the laptop alone and at the office
+(vertical Acer on the left, laptop in the middle, HP on the right).
 
-### App Launchers
+Key symbols: **⌥** Option (Alt) · **⇧** Shift · **⌃** Control · **⌘** Command
 
-| Keybinding | Application |
-|---|---|
-| `Cmd+Alt+B` | Google Chrome |
-| `Cmd+Alt+C` | VS Code |
-| `Cmd+Alt+I` | WezTerm |
-| `Cmd+Alt+D` | Dia |
-| `Cmd+Alt+G` | Grok Bot |
-| `Cmd+Alt+K` | Docker |
-| `Cmd+Alt+N` | Notion |
-| `Cmd+Alt+P` | Postman |
-| `Cmd+Alt+L` | Linear |
-| `Cmd+Alt+O` | Codex |
-| `Cmd+Alt+W` | Wave |
-| `Cmd+Alt+Q` | LM Studio |
-| `Cmd+Alt+V` | Obsidian |
-| `Cmd+Alt+R` | Reload SketchyBar |
+## The idea
 
-### Move Window to Workspace
+- **Every app has one letter.** That letter is its workspace: **S** is Slack, **C** is VS Code, **A** is Dia.
+- **A workspace shows one window at a time, full size.** If an app has several windows they sit exactly on top of each other and you flip through them.
+- **You never arrange anything.** Windows go to their app's letter by themselves, on the laptop or at the office.
+
+## Keys
+
+There are three layers and nothing else to learn.
+
+| Keys | What it does |
+| --- | --- |
+| **⇧⌥ + letter** | Go to that app. If it isn't open, it launches. |
+| **⌃⇧⌥ + letter** | Take the current window to that letter and go with it. |
+| **⌥ + key** | Everything about windows (table below). |
+
+| ⌥ key | What it does |
+| --- | --- |
+| ⌥\` | Next window of this app (⇧⌥\` for previous) |
+| ⌥Space | Find any window by typing its name (Raycast Switch Windows) |
+| ⌥Tab | Back to the window you were just in |
+| ⌥[ / ⌥] | Previous / next workspace that has windows |
+| ⌥H / J / K / L | Focus left / down / up / right; crosses to the next monitor at the edge |
+| ⌥1 / ⌥2 / ⌥3 | Left / middle / right monitor (office only) |
+| ⌥E | Show this workspace's windows side by side |
+| ⌥, | Back to one at a time |
+| ⌥W | Fullscreen the window (use this, never the green button) |
+| ⌃⌥H / J / K / L | Move the window within a side-by-side layout |
+| ⌥- / ⌥= | Shrink / grow the window in a side-by-side layout |
+
+## Letters
+
+| Letter | Apps | Office screen |
+| --- | --- | --- |
+| **A** | Dia | HP (right) |
+| **B** | Chrome | HP |
+| **D** | TablePlus | HP |
+| **P** | Postman | HP |
+| **Q** | LM Studio | HP |
+| **W** | Wave | HP |
+| **C** | VS Code | Acer (left, vertical) |
+| **G** | Grok Bot | Acer |
+| **K** | Docker | Acer |
+| **T** | WezTerm, Warp | Acer |
+| **S** | Slack | Laptop (middle) |
+| **J** | Linear, Calendar | Laptop |
+| **N** | Notion | Laptop |
+| **M** | Spotify | Laptop |
+| **F** | Finder, Preview | Laptop |
+| **E** | System Settings, Print Center | Laptop |
+| **O** | Codex, Claude, Kimi Code, zcode, MiniMax Code | Laptop |
+| **V** | Obsidian | Laptop |
+
+On the laptop alone, every letter lives on the laptop screen. Calculator, Raycast,
+Archive Utility and Installer windows float on top of whatever you're in.
+
+## Everyday use
+
+**Go to an app.** ⇧⌥ + its letter. Clicking its Dock icon or its pill in the bar does the same thing.
+
+**Flip between an app's windows.** ⌥\`. With eight VS Code windows, ⌥\` walks through them in order.
+
+**Jump straight to one specific window.** ⌥Space, type a few letters of its title
+(`maidan`, `soundcheck`, `ENG-6840`), Return. This is the fast way between agent windows.
+
+**Bounce between two things.** ⌥Tab goes back to the window you were just in,
+for example an agent in VS Code and a Slack thread.
+
+**Open another window of an app.** Use the app's own shortcut (⌘N). It lands on the
+app's letter, on top of the others.
+
+**See two windows at once.** ⌥E for side by side, ⌥, to go back.
+
+**Put a window somewhere else.** ⌃⇧⌥ + letter. It stays there until the next arrange.
+
+**Dock or undock at the office.** Do nothing. Workspaces move to their screens,
+everything re-sorts, and the bar redraws within a couple of seconds.
+
+## The bar
+
+- Each pill is a workspace that has windows: its letter plus one icon per app. Empty workspaces are hidden.
+- The bright pill is where you are. At the office, an outlined pill is what's showing on that screen.
+- Click a pill to go there.
+- An orange **SERVICE** badge means service mode is on (see below).
+- A red **AeroSpace can't see windows** badge means macOS's Accessibility layer is broken. See Troubleshooting.
+
+## Two things that break it
+
+1. **The green fullscreen button (or ⌃⌘F).** macOS moves that window to its own hidden
+   desktop where AeroSpace can't reach it. The app then looks like it has no window,
+   so clicking its Dock icon opens a new one. Use **⌥W** instead.
+   If it happens anyway, ⌃⌥/ then A puts it back.
+2. **Extra macOS desktops.** Keep exactly one desktop in Mission Control. Windows on
+   another desktop are invisible to AeroSpace.
 
-Send current window to any workspace: `Cmd+Alt+Shift+[Letter]`
+## Service mode
 
-Same letter pattern as switching: `Cmd+Alt+Shift+C` sends to Code, `Cmd+Alt+Shift+B` sends to Browser, etc.
+Press **⌃⌥/**, then one key. It returns to normal by itself.
 
-Move current window and follow it immediately: `Ctrl+Alt+Shift+[Letter]`
+| Key | What it does |
+| --- | --- |
+| **A** | Arrange: exit native fullscreen, send every window to its letter, one window at a time everywhere |
+| R | Reset the current workspace's layout |
+| F | Float / unfloat the current window |
+| B | Reload the bar |
+| Backspace | Close every window in this workspace except the current one |
+| Esc | Reload the config |
 
-This uses the same workspace letters, so `Ctrl+Alt+Shift+G` sends the current window to Grok Bot and switches there.
-
-### Layout Controls
-
-| Keybinding | Action |
-|---|---|
-| `Alt+E` | Toggle horizontal/vertical tile |
-| `Alt+,` | Toggle accordion layout |
-| `Alt+W` | Toggle fullscreen |
-| `Alt+Y` | Join right neighbor below (split layout) |
-| `Alt+-` | Shrink window |
-| `Alt+=` | Grow window |
-
-### Window Movement
-
-Move windows with `Ctrl+Alt+H/J/K/L` (same directions as focus).
-
-### Workspace Utilities
-
-| Keybinding | Action |
-|---|---|
-| `Alt+Tab` | Previous window, across workspaces/monitors (falls back to previous workspace) |
-| `Alt+[` / `Alt+]` | Previous / next occupied workspace on this monitor (wraps) |
-
----
-
-## Service Mode
-
-Press `Ctrl+Alt+/` to enter service mode, then:
-
-| Key | Action |
-|---|---|
-| `Esc` | Reload config & exit |
-| `R` | Reset/flatten workspace layout |
-| `A` | Arrange: re-sort every open window to its app's workspace |
-| `F` | Toggle floating/tiling |
-| `Backspace` | Close all windows except current |
-| `Ctrl+Alt+H/J/K/L` | Join window with neighbor |
-
-All commands auto-return to main mode. While in service mode, a SERVICE badge shows in the bar.
-
-Calculator, Raycast, Archive Utility and Installer windows float wherever they open.
-
----
-
-## Common Workflows
-
-### Development Cycle
-
-```
-Alt+Shift+C       → Switch to Code workspace (VS Code)
-Alt+Shift+T       → Switch to Terminal (WezTerm)
-Alt+Shift+G       → Switch to Grok Bot
-Alt+Tab           → Toggle between recent workspaces
-Alt+Shift+B       → Check something in the browser
-Alt+1             → Jump back to development monitor
-```
-
-### Debugging Flow
-
-```
-Alt+Shift+C       → Code workspace
-Alt+Shift+K       → Docker workspace (check containers)
-Alt+Shift+D       → Database workspace (TablePlus)
-Alt+Shift+P       → Postman (test API)
-```
-
-### Communication Check
-
-```
-Alt+2             → Jump to built-in display
-Alt+Shift+S       → Slack
-Alt+Shift+J       → Linear (check tickets)
-Alt+Shift+N       → Notion (docs)
-```
-
-### Moving a Window
-
-```
-Alt+H/J/K/L             → Focus the window you want to move
-Cmd+Alt+Shift+[Letter]  → Send it to target workspace
-Alt+Shift+[Letter]      → Follow it there (optional)
-Ctrl+Alt+Shift+[Letter] → Send and follow in one step
-```
-
-### Fixing a Messy Layout
-
-```
-Ctrl+Alt+/        → Enter service mode
-R                 → Flatten/reset the workspace tree
-```
-
----
-
-## Companion Tools
-
-This setup uses the following tools together:
-
-### Currently Installed
-
-| Tool | Purpose | Config |
-|---|---|---|
-| [AeroSpace](https://github.com/nikitabobko/AeroSpace) | Tiling window manager | `~/.config/aerospace/` |
-| [SketchyBar](https://github.com/FelixKratz/SketchyBar) | Custom macOS menu bar | `~/.config/sketchybar/` |
-| [JankyBorders](https://github.com/FelixKratz/JankyBorders) | Window border highlights | `~/.config/borders/bordersrc`, kept alive by `~/Library/LaunchAgents/local.borders.plist` |
-| [Neovim](https://neovim.io/) | Terminal editor | `~/.config/nvim/` |
-| [WezTerm](https://wezfurlong.org/wezterm/) | GPU-accelerated terminal | — |
-
-### Recommended Additions
-
-| Tool | What It Does | Install |
-|---|---|---|
-| [Raycast](https://www.raycast.com/) | Spotlight replacement with extensions, clipboard manager, snippets | `brew install --cask raycast` |
-| [alt-tab-macos](https://github.com/lwouis/alt-tab-macos) | Windows-style alt-tab with window previews | `brew install --cask alt-tab` |
-| [Karabiner-Elements](https://karabiner-elements.pqrs.org/) | Remap keys (e.g. Caps Lock → Hyper key for more shortcuts) | `brew install --cask karabiner-elements` |
-| [skhd](https://github.com/koekeishiya/skhd) | Extra global hotkeys beyond aerospace bindings | `brew install koekeishiya/formulae/skhd` |
-| [Homerow](https://www.homerow.app/) | Keyboard-driven click targets (like Vimium for all macOS) | `brew install --cask homerow` |
-
-**Tip**: Karabiner + Hyper key (Caps Lock → Cmd+Alt+Ctrl+Shift) gives you a whole extra modifier layer for shortcuts without conflicts.
-
----
-
-## Installation
-
-### Prerequisites
-
-```bash
-brew tap FelixKratz/formulae
-brew install --cask aerospace
-brew install borders sketchybar
-```
-
-### Font Required for SketchyBar
-
-```bash
-# sketchybar-app-font for workspace app icons
-curl -L https://github.com/kvndrsslr/sketchybar-app-font/releases/download/v2.0.28/sketchybar-app-font.ttf -o ~/Library/Fonts/sketchybar-app-font.ttf
-
-# Hack Nerd Font for icons
-brew install --cask font-hack-nerd-font
-```
-
-### Config Files
-
-```
-~/.config/aerospace/aerospace.toml    — Main AeroSpace config
-~/.config/sketchybar/sketchybarrc     — SketchyBar config
-~/.config/sketchybar/plugins/         — SketchyBar plugin scripts
-~/.config/nvim/                       — Neovim config
-```
-
-### Reload After Changes
-
-- **AeroSpace**: automatic on save (`auto-reload-config`); manual: `Ctrl+Alt+/` then `Esc`
-- **SketchyBar**: `Cmd+Alt+R` or `sketchybar --reload`
-- **Borders**: `launchctl kickstart -k gui/$(id -u)/local.borders`
-
-Requires AeroSpace 0.21+ (`config-version = 2`, new `on-window-detected` syntax).
-
----
+**⌃⌥/ then A fixes almost anything that looks wrong.**
 
 ## Troubleshooting
 
-### Apps Landing on Wrong Monitor
+| Symptom | Fix |
+| --- | --- |
+| Windows are side by side, on the wrong letter, or an app opens a new window instead of showing its existing one | ⌃⌥/ then A |
+| Red "AeroSpace can't see windows" badge | Click it and check AeroSpace is switched on under Accessibility. If it already is, macOS's Accessibility layer is broken for this login session (seen after the window server hung on wake); reboot. |
+| Keys do nothing | Run `aerospace list-workspaces --focused`. If it hangs: `pkill -x AeroSpace; open -a AeroSpace` |
+| ⌥Space does nothing | Open Raycast, run "Switch Windows" once, and choose **Always Run Command** when asked |
+| Bar looks stale | ⌃⌥/ then B |
+| Focus jumps to Slack by itself | Known AeroSpace bug (#1939); no config fix |
 
-Monitor name patterns are more stable than macOS display numbers. If apps go to the wrong screen:
+## How it's wired
 
-1. Check `aerospace list-monitors` for the exact Acer and HP Pavilion names (`XF273 S`, `HP Pavilion32`)
-2. Update `[workspace-to-monitor-force-assignment]` in `aerospace.toml` (saving auto-reloads)
-3. Re-sort open windows: `Ctrl+Alt+/` then `A`
-4. Reload the bar (`Cmd+Alt+R`) — `items/spaces.sh` maps workspaces to bars automatically
-   via `aerospace list-monitors --format '%{monitor-id} %{monitor-appkit-nsscreen-screens-id}'`
+| File | Job |
+| --- | --- |
+| `aerospace.toml` | Keys, app → letter rules, letter → monitor rules. Reloads on save. |
+| `arrange.sh` | The known-good state. Runs at startup, on dock/undock, and on ⌃⌥/ A. |
+| `launch-if-empty.sh` | Launches the app when you go to a letter that has no windows. |
+| `~/.config/sketchybar/plugins/workspaces.sh` | Draws the pills. Runs on workspace switch, window open/close, dock/undock and wake. |
+| `~/.config/sketchybar/items/spaces.sh` | Creates the pills and the red badge. |
+| `~/.config/borders/bordersrc` | Window border colors; kept alive by `~/Library/LaunchAgents/local.borders.plist`. |
 
-### SketchyBar Icons Not Updating
+Every script that calls the `aerospace` command wraps it in a timeout, so a slow
+AeroSpace can never pile up stuck processes.
 
-```bash
-# Force reload
-sketchybar --reload
+### Add an app
 
-# Check if the update script is executable
-chmod +x ~/.config/sketchybar/plugins/*.sh
-```
+1. Find its bundle ID: `aerospace list-apps` while it's running.
+2. Add it to the `on-window-detected` list in `aerospace.toml`:
 
-### Everything Stops Responding (keys, pickers, bar)
+   ```toml
+   { if = 'test %{app-bundle-id} = com.example.app', run = 'move-node-to-workspace X' },
+   ```
 
-The AeroSpace server has stalled. Check:
+3. If it's the main app for that letter, point the letter's `alt-shift-x` line at it
+   (`-b <bundle id>`), so ⇧⌥X launches it.
 
-```bash
-perl -e 'alarm 3; exec @ARGV' aerospace list-workspaces --focused || echo "server stalled"
-pgrep -f '^aerospace ' | wc -l   # stuck CLI clients piling up
-```
+### Requirements
 
-If it's stalled, quit and reopen AeroSpace (`osascript -e 'quit app "AeroSpace"'`, then
-`open -a AeroSpace`; if the quit hangs, `pkill -x AeroSpace` first). Every script that calls the
-`aerospace` CLI should wrap it in a timeout like the one above, so a stall can't pile up processes.
-
-### Layout Feels Broken/Jumpy
-
-```
-Ctrl+Alt+/  →  R       (flatten workspace tree)
-Ctrl+Alt+/  →  Esc     (reload config)
-```
-
-### Finding an App's Bundle ID
-
-To add a new app to auto-assign:
-
-```bash
-osascript -e 'id of app "AppName"'
-```
-
-Then add an entry to the `on-window-detected` list in `aerospace.toml`:
-
-```toml
-{ if = 'test %{app-bundle-id} = com.example.app', run = 'move-node-to-workspace X' },
-```
+- AeroSpace 0.21 or newer: `brew install --cask nikitabobko/tap/aerospace`
+- SketchyBar and JankyBorders: `brew tap FelixKratz/formulae && brew install sketchybar borders`
+- `jq` (the bar uses it): `brew install jq`
+- Raycast, for ⌥Space
+- Fonts: `brew install --cask font-hack-nerd-font`, plus
+  [sketchybar-app-font](https://github.com/kvndrsslr/sketchybar-app-font) in `~/Library/Fonts`
+- macOS settings: one desktop in Mission Control; "Displays have separate Spaces" off;
+  "Automatically rearrange Spaces" off

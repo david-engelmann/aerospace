@@ -1,6 +1,14 @@
 # AeroSpace Window Manager Configuration
 # See full docs: https://nikitabobko.github.io/AeroSpace/
 # Requires AeroSpace 0.21+ (config-version 2, TOML 1.1 multiline inline tables)
+#
+# One config for both setups:
+#   Office  — vertical Acer (left) + laptop (middle) + HP (right)
+#   Away    — laptop only: every workspace lives on the laptop screen
+# Each app owns one letter workspace. Three key layers, nothing else to learn:
+#   ⌥⇧ letter    go to that app (launches it if it isn't open)
+#   ⌃⌥⇧ letter   take the current window there
+#   ⌥ key        everything about windows (focus, cycle, layout)
 
 config-version = 2
 
@@ -10,16 +18,14 @@ auto-reload-config = true
 # Borders (JankyBorders) runs from ~/Library/LaunchAgents/local.borders.plist
 # (config: ~/.config/borders/bordersrc), so it restarts itself if it dies.
 after-startup-command = [
-    # Sketchybar's LaunchAgent can win the race at login and build the bar before
-    # AeroSpace is up (no workspace items). Rebuild it once the server is ready.
-    'exec-and-forget /opt/homebrew/bin/sketchybar --reload',
-    # Apply the app→workspace rules to windows that were already open at startup
-    'run-callback --for-every-window on-window-detected',
+    # Known-good state: no native fullscreen, every window on its app's
+    # workspace, one window at a time everywhere. See arrange.sh.
+    'exec-and-forget ~/.config/aerospace/arrange.sh',
 ]
 
 start-at-login = true
 
-# All workspaces always exist, so the bar shows every slot even when empty
+# All workspaces always exist
 persistent-workspaces = [
     'B', 'D', 'P', 'A', 'W', 'Q',           # HP Pavilion32
     'S', 'J', 'N', 'M', 'F', 'E', 'O', 'V', # built-in
@@ -30,27 +36,22 @@ persistent-workspaces = [
 enable-normalization-flatten-containers = true
 enable-normalization-opposite-orientation-for-nested-containers = true
 
-# Layout defaults — accordion gives each window full space, cycle with ⌥`
-# Toggle to tiles with ⌥E when you want side-by-side.
-# Auto keeps portrait displays vertical and landscape displays horizontal.
-accordion-padding = 30
+# One window at a time, full size; ⌥` flips to the next one in the workspace.
+# Padding is 0 so windows don't shift around every time focus changes.
+# ⌥E puts a workspace side by side, ⌥, brings it back.
+accordion-padding = 0
 default-root-container-layout = 'accordion'
 default-root-container-orientation = 'auto'
 
-# Mouse follows focus ONLY on intentional keybinding switches (not on-window-detected)
-# Removed: on-focused-monitor-changed = ['move-mouse monitor-lazy-center']
-# Instead, move-mouse is attached to each navigation keybinding below
+# The mouse only moves on deliberate key presses (see bindings), never because
+# an app opened a window somewhere — so no on-focused-monitor-changed here.
 
 # Prevent cmd-h from hiding apps (common accidental press)
 automatically-unhide-macos-hidden-apps = true
 
-# Notify Sketchybar about workspace change (highlights the focused workspace)
-exec-on-workspace-change = ['/bin/bash', '-c', 'sketchybar --trigger aerospace_workspace_change FOCUSED_WORKSPACE=$AEROSPACE_FOCUSED_WORKSPACE PREV_WORKSPACE=$AEROSPACE_PREV_WORKSPACE']
-
-# Refresh bar app icons whenever focus changes — covers workspace switches,
-# windows opening/closing, and windows sent to other workspaces.
-# The script is locked + debounced, so frequent firing is cheap.
-on-focus-changed = ['exec-and-forget ~/.config/sketchybar/plugins/update_workspace_icon.sh']
+# Redraw the bar's workspace pills on every workspace switch. Deliberately NOT
+# on every focus change: that made each focus change trigger extra work.
+exec-on-workspace-change = ['/bin/bash', '-c', '~/.config/sketchybar/plugins/workspaces.sh']
 
 # Show a SERVICE badge in the bar while a non-main binding mode is active
 on-mode-changed = ['exec-and-forget ~/.config/sketchybar/plugins/aerospace_mode.sh']
@@ -119,148 +120,93 @@ outer.top = [{ monitor.'built-in' = 38 }, 42]
 outer.right = [{ monitor.'built-in' = 2 }, 6]
 outer.left = [{ monitor.'built-in' = 2 }, 6]
 
-# Keybindings
 [mode.main.binding]
 
-# ── Monitor Anchors (mouse follows) ──
-# ⌥1/2/3 = left/middle/right monitor, landing on whatever workspace is showing there
+# ── ⌥⇧ letter: go to that app. If its workspace is empty, launch the app. ──
+alt-shift-a = ['workspace A', 'move-mouse monitor-lazy-center', 'exec-and-forget ~/.config/aerospace/launch-if-empty.sh A -b company.thebrowser.dia']
+alt-shift-b = ['workspace B', 'move-mouse monitor-lazy-center', 'exec-and-forget ~/.config/aerospace/launch-if-empty.sh B -b com.google.Chrome']
+alt-shift-c = ['workspace C', 'move-mouse monitor-lazy-center', 'exec-and-forget ~/.config/aerospace/launch-if-empty.sh C -b com.microsoft.VSCode']
+alt-shift-d = ['workspace D', 'move-mouse monitor-lazy-center', 'exec-and-forget ~/.config/aerospace/launch-if-empty.sh D -b com.tinyapp.TablePlus']
+alt-shift-e = ['workspace E', 'move-mouse monitor-lazy-center', 'exec-and-forget ~/.config/aerospace/launch-if-empty.sh E -b com.apple.systempreferences']
+alt-shift-f = ['workspace F', 'move-mouse monitor-lazy-center', 'exec-and-forget ~/.config/aerospace/launch-if-empty.sh F /Users/david']
+alt-shift-g = ['workspace G', 'move-mouse monitor-lazy-center', 'exec-and-forget ~/.config/aerospace/launch-if-empty.sh G -b com.anysphere.sand']
+alt-shift-j = ['workspace J', 'move-mouse monitor-lazy-center', 'exec-and-forget ~/.config/aerospace/launch-if-empty.sh J -b com.linear']
+alt-shift-k = ['workspace K', 'move-mouse monitor-lazy-center', 'exec-and-forget ~/.config/aerospace/launch-if-empty.sh K -a Docker']
+alt-shift-m = ['workspace M', 'move-mouse monitor-lazy-center', 'exec-and-forget ~/.config/aerospace/launch-if-empty.sh M -b com.spotify.client']
+alt-shift-n = ['workspace N', 'move-mouse monitor-lazy-center', 'exec-and-forget ~/.config/aerospace/launch-if-empty.sh N -b notion.id']
+alt-shift-o = ['workspace O', 'move-mouse monitor-lazy-center', 'exec-and-forget ~/.config/aerospace/launch-if-empty.sh O -b com.openai.codex']
+alt-shift-p = ['workspace P', 'move-mouse monitor-lazy-center', 'exec-and-forget ~/.config/aerospace/launch-if-empty.sh P -b com.postmanlabs.mac']
+alt-shift-q = ['workspace Q', 'move-mouse monitor-lazy-center', 'exec-and-forget ~/.config/aerospace/launch-if-empty.sh Q -b ai.elementlabs.lmstudio']
+alt-shift-s = ['workspace S', 'move-mouse monitor-lazy-center', 'exec-and-forget ~/.config/aerospace/launch-if-empty.sh S -b com.tinyspeck.slackmacgap']
+alt-shift-t = ['workspace T', 'move-mouse monitor-lazy-center', 'exec-and-forget ~/.config/aerospace/launch-if-empty.sh T -b com.github.wez.wezterm']
+alt-shift-v = ['workspace V', 'move-mouse monitor-lazy-center', 'exec-and-forget ~/.config/aerospace/launch-if-empty.sh V -b md.obsidian']
+alt-shift-w = ['workspace W', 'move-mouse monitor-lazy-center', 'exec-and-forget ~/.config/aerospace/launch-if-empty.sh W -b dev.commandline.waveterm']
+
+# ── ⌃⌥⇧ letter: take the current window to that workspace (and go with it) ──
+ctrl-alt-shift-a = 'move-node-to-workspace --focus-follows-window A; move-mouse monitor-lazy-center'
+ctrl-alt-shift-b = 'move-node-to-workspace --focus-follows-window B; move-mouse monitor-lazy-center'
+ctrl-alt-shift-c = 'move-node-to-workspace --focus-follows-window C; move-mouse monitor-lazy-center'
+ctrl-alt-shift-d = 'move-node-to-workspace --focus-follows-window D; move-mouse monitor-lazy-center'
+ctrl-alt-shift-e = 'move-node-to-workspace --focus-follows-window E; move-mouse monitor-lazy-center'
+ctrl-alt-shift-f = 'move-node-to-workspace --focus-follows-window F; move-mouse monitor-lazy-center'
+ctrl-alt-shift-g = 'move-node-to-workspace --focus-follows-window G; move-mouse monitor-lazy-center'
+ctrl-alt-shift-j = 'move-node-to-workspace --focus-follows-window J; move-mouse monitor-lazy-center'
+ctrl-alt-shift-k = 'move-node-to-workspace --focus-follows-window K; move-mouse monitor-lazy-center'
+ctrl-alt-shift-m = 'move-node-to-workspace --focus-follows-window M; move-mouse monitor-lazy-center'
+ctrl-alt-shift-n = 'move-node-to-workspace --focus-follows-window N; move-mouse monitor-lazy-center'
+ctrl-alt-shift-o = 'move-node-to-workspace --focus-follows-window O; move-mouse monitor-lazy-center'
+ctrl-alt-shift-p = 'move-node-to-workspace --focus-follows-window P; move-mouse monitor-lazy-center'
+ctrl-alt-shift-q = 'move-node-to-workspace --focus-follows-window Q; move-mouse monitor-lazy-center'
+ctrl-alt-shift-s = 'move-node-to-workspace --focus-follows-window S; move-mouse monitor-lazy-center'
+ctrl-alt-shift-t = 'move-node-to-workspace --focus-follows-window T; move-mouse monitor-lazy-center'
+ctrl-alt-shift-v = 'move-node-to-workspace --focus-follows-window V; move-mouse monitor-lazy-center'
+ctrl-alt-shift-w = 'move-node-to-workspace --focus-follows-window W; move-mouse monitor-lazy-center'
+
+# ── Monitors (office): ⌥1 left, ⌥2 middle, ⌥3 right. No-ops on the laptop alone. ──
 alt-1 = ['focus-monitor XF273', 'move-mouse monitor-lazy-center']
 alt-2 = ['focus-monitor built-in', 'move-mouse monitor-lazy-center']
 alt-3 = ['focus-monitor Pavilion', 'move-mouse monitor-lazy-center']
-alt-shift-left = ['focus-monitor --wrap-around left', 'move-mouse monitor-lazy-center']
-alt-shift-right = ['focus-monitor --wrap-around right', 'move-mouse monitor-lazy-center']
-cmd-alt-tab = ['focus-monitor --wrap-around next', 'move-mouse monitor-lazy-center']
-cmd-shift-alt-tab = ['focus-monitor --wrap-around prev', 'move-mouse monitor-lazy-center']
 
-# ── App Launchers (Cmd+Alt+Letter) ──
-cmd-alt-b = 'exec-and-forget open -a "Google Chrome"'
-cmd-alt-c = 'exec-and-forget open -a "Visual Studio Code"'
-cmd-alt-i = 'exec-and-forget open -a "WezTerm"'
-cmd-alt-d = 'exec-and-forget open -a "Dia"'
-cmd-alt-g = 'exec-and-forget open -a "Grok Bot"'
-cmd-alt-k = 'exec-and-forget open -a "Docker"'
-cmd-alt-n = 'exec-and-forget open -a "Notion"'
-cmd-alt-p = 'exec-and-forget open -a "Postman"'
-cmd-alt-l = 'exec-and-forget open -a "Linear"'
-cmd-alt-o = 'exec-and-forget open -a "Codex"'
-cmd-alt-w = 'exec-and-forget open -a "Wave"'
-cmd-alt-q = 'exec-and-forget open -a "LM Studio"'
-cmd-alt-v = 'exec-and-forget open -a "Obsidian"'
-cmd-alt-r = ['exec-and-forget /opt/homebrew/bin/sketchybar --reload']
-
-# ── Window Focus (Vim-style, crosses into the neighbouring monitor at the edge) ──
+# ── Getting around ──
+# Find any window by name (Raycast's Switch Windows) — the fast way to a specific
+# VS Code / agent window
+alt-space = 'exec-and-forget open -g raycast://extensions/raycast/navigation/switch-windows'
+# Previous window (across workspaces/monitors); falls back to previous workspace
+alt-tab = 'focus-back-and-forth || workspace-back-and-forth; move-mouse monitor-lazy-center'
+# Next / previous window in this workspace
+alt-backtick = 'focus dfs-next --boundaries-action wrap-around-the-workspace'
+alt-shift-backtick = 'focus dfs-prev --boundaries-action wrap-around-the-workspace'
+# Next / previous workspace that has windows, on this monitor
+alt-leftSquareBracket = 'list-workspaces --monitor focused --empty no | workspace --wrap-around --stdin prev'
+alt-rightSquareBracket = 'list-workspaces --monitor focused --empty no | workspace --wrap-around --stdin next'
+# Focus by direction (crosses into the neighbouring monitor at the edge)
 alt-h = 'focus --boundaries all-monitors-outer-frame left'
 alt-j = 'focus --boundaries all-monitors-outer-frame down'
 alt-k = 'focus --boundaries all-monitors-outer-frame up'
 alt-l = 'focus --boundaries all-monitors-outer-frame right'
 
-# ── Cycle Windows in Workspace (like Cmd+` but for tiling) ──
-alt-backtick = 'focus dfs-next --boundaries-action wrap-around-the-workspace'
-alt-shift-backtick = 'focus dfs-prev --boundaries-action wrap-around-the-workspace'
-
-# ── Layout ──
-alt-e = 'layout tiles horizontal vertical'
-alt-comma = 'layout accordion horizontal vertical'
+# ── Layout of the current workspace ──
+alt-e = 'layout tiles horizontal vertical'         # side by side
+alt-comma = 'layout accordion horizontal vertical' # back to one at a time
 alt-w = 'fullscreen'
 alt-y = ['focus right', 'join-with down', 'layout tiles horizontal']
-
-# ── Window Movement ──
 ctrl-alt-h = 'move left'
 ctrl-alt-j = 'move down'
 ctrl-alt-k = 'move up'
 ctrl-alt-l = 'move right'
-
-# ── Window Resizing ──
 alt-minus = 'resize smart -50'
 alt-equal = 'resize smart +50'
 
-# ── Workspace Switching (Alt+Shift+Letter, mouse follows; press again to jump back) ──
-alt-shift-b = ['workspace --auto-back-and-forth B', 'move-mouse monitor-lazy-center']
-alt-shift-c = ['workspace --auto-back-and-forth C', 'move-mouse monitor-lazy-center']
-alt-shift-t = ['workspace --auto-back-and-forth T', 'move-mouse monitor-lazy-center']
-alt-shift-d = ['workspace --auto-back-and-forth D', 'move-mouse monitor-lazy-center']
-alt-shift-g = ['workspace --auto-back-and-forth G', 'move-mouse monitor-lazy-center']
-alt-shift-p = ['workspace --auto-back-and-forth P', 'move-mouse monitor-lazy-center']
-alt-shift-j = ['workspace --auto-back-and-forth J', 'move-mouse monitor-lazy-center']
-alt-shift-s = ['workspace --auto-back-and-forth S', 'move-mouse monitor-lazy-center']
-alt-shift-n = ['workspace --auto-back-and-forth N', 'move-mouse monitor-lazy-center']
-alt-shift-k = ['workspace --auto-back-and-forth K', 'move-mouse monitor-lazy-center']
-alt-shift-f = ['workspace --auto-back-and-forth F', 'move-mouse monitor-lazy-center']
-alt-shift-m = ['workspace --auto-back-and-forth M', 'move-mouse monitor-lazy-center']
-alt-shift-a = ['workspace --auto-back-and-forth A', 'move-mouse monitor-lazy-center']
-alt-shift-e = ['workspace --auto-back-and-forth E', 'move-mouse monitor-lazy-center']
-alt-shift-o = ['workspace --auto-back-and-forth O', 'move-mouse monitor-lazy-center']
-alt-shift-w = ['workspace --auto-back-and-forth W', 'move-mouse monitor-lazy-center']
-alt-shift-q = ['workspace --auto-back-and-forth Q', 'move-mouse monitor-lazy-center']
-alt-shift-v = ['workspace --auto-back-and-forth V', 'move-mouse monitor-lazy-center']
-
-# ── Move Window to Workspace (Cmd+Alt+Shift+Letter) ──
-cmd-alt-shift-b = 'move-node-to-workspace B'
-cmd-alt-shift-c = 'move-node-to-workspace C'
-cmd-alt-shift-t = 'move-node-to-workspace T'
-cmd-alt-shift-d = 'move-node-to-workspace D'
-cmd-alt-shift-g = 'move-node-to-workspace G'
-cmd-alt-shift-p = 'move-node-to-workspace P'
-cmd-alt-shift-j = 'move-node-to-workspace J'
-cmd-alt-shift-s = 'move-node-to-workspace S'
-cmd-alt-shift-n = 'move-node-to-workspace N'
-cmd-alt-shift-k = 'move-node-to-workspace K'
-cmd-alt-shift-f = 'move-node-to-workspace F'
-cmd-alt-shift-m = 'move-node-to-workspace M'
-cmd-alt-shift-a = 'move-node-to-workspace A'
-cmd-alt-shift-e = 'move-node-to-workspace E'
-cmd-alt-shift-o = 'move-node-to-workspace O'
-cmd-alt-shift-w = 'move-node-to-workspace W'
-cmd-alt-shift-q = 'move-node-to-workspace Q'
-cmd-alt-shift-v = 'move-node-to-workspace V'
-
-# ── Move Window AND Follow (Ctrl+Alt+Shift+Letter) ──
-ctrl-alt-shift-b = ['move-node-to-workspace --focus-follows-window B', 'move-mouse monitor-lazy-center']
-ctrl-alt-shift-c = ['move-node-to-workspace --focus-follows-window C', 'move-mouse monitor-lazy-center']
-ctrl-alt-shift-t = ['move-node-to-workspace --focus-follows-window T', 'move-mouse monitor-lazy-center']
-ctrl-alt-shift-d = ['move-node-to-workspace --focus-follows-window D', 'move-mouse monitor-lazy-center']
-ctrl-alt-shift-g = ['move-node-to-workspace --focus-follows-window G', 'move-mouse monitor-lazy-center']
-ctrl-alt-shift-p = ['move-node-to-workspace --focus-follows-window P', 'move-mouse monitor-lazy-center']
-ctrl-alt-shift-j = ['move-node-to-workspace --focus-follows-window J', 'move-mouse monitor-lazy-center']
-ctrl-alt-shift-s = ['move-node-to-workspace --focus-follows-window S', 'move-mouse monitor-lazy-center']
-ctrl-alt-shift-n = ['move-node-to-workspace --focus-follows-window N', 'move-mouse monitor-lazy-center']
-ctrl-alt-shift-k = ['move-node-to-workspace --focus-follows-window K', 'move-mouse monitor-lazy-center']
-ctrl-alt-shift-f = ['move-node-to-workspace --focus-follows-window F', 'move-mouse monitor-lazy-center']
-ctrl-alt-shift-m = ['move-node-to-workspace --focus-follows-window M', 'move-mouse monitor-lazy-center']
-ctrl-alt-shift-a = ['move-node-to-workspace --focus-follows-window A', 'move-mouse monitor-lazy-center']
-ctrl-alt-shift-e = ['move-node-to-workspace --focus-follows-window E', 'move-mouse monitor-lazy-center']
-ctrl-alt-shift-o = ['move-node-to-workspace --focus-follows-window O', 'move-mouse monitor-lazy-center']
-ctrl-alt-shift-w = ['move-node-to-workspace --focus-follows-window W', 'move-mouse monitor-lazy-center']
-ctrl-alt-shift-q = ['move-node-to-workspace --focus-follows-window Q', 'move-mouse monitor-lazy-center']
-ctrl-alt-shift-v = ['move-node-to-workspace --focus-follows-window V', 'move-mouse monitor-lazy-center']
-
-# ── Workspace Utilities ──
-# Step through occupied workspaces on the current monitor (⌥[ / ⌥])
-alt-leftSquareBracket = 'list-workspaces --monitor focused --empty no | workspace --wrap-around --stdin prev'
-alt-rightSquareBracket = 'list-workspaces --monitor focused --empty no | workspace --wrap-around --stdin next'
-# Previous window (across workspaces/monitors); falls back to previous workspace
-alt-tab = 'focus-back-and-forth || workspace-back-and-forth; move-mouse monitor-lazy-center'
-# (move-workspace-to-monitor is a no-op here: every workspace is force-assigned to a monitor)
-
-# ── Service Mode ──
+# ── Service mode: ⌃⌥/ then one key ──
 ctrl-alt-slash = 'mode service'
 
-# 'service' binding mode declaration.
-# See: https://nikitabobko.github.io/AeroSpace/guide#binding-modes
 [mode.service.binding]
 esc = ['reload-config', 'mode main']
-r = ['flatten-workspace-tree', 'mode main'] # reset layout
-a = ['run-callback --for-every-window on-window-detected', 'mode main'] # re-sort every window to its app's workspace
-f = ['layout floating tiling', 'mode main'] # Toggle between floating and tiling layout
+a = ['exec-and-forget ~/.config/aerospace/arrange.sh', 'mode main']         # arrange: put everything back where it belongs
+r = ['flatten-workspace-tree', 'mode main']                             # reset this workspace's layout
+f = ['layout floating tiling', 'mode main']                             # float / unfloat this window
+b = ['exec-and-forget /opt/homebrew/bin/sketchybar --reload', 'mode main'] # reload the bar
 backspace = ['close-all-windows-but-current', 'mode main']
-
-# sticky is not yet supported https://github.com/nikitabobko/AeroSpace/issues/2
-#s = ['layout sticky tiling', 'mode main']
-
-ctrl-alt-h = ['join-with left', 'mode main']
-ctrl-alt-j = ['join-with down', 'mode main']
-ctrl-alt-k = ['join-with up', 'mode main']
-ctrl-alt-l = ['join-with right', 'mode main']
 
 # Force certain workspaces to certain monitors.
 # Prefer stable display-name patterns so macOS monitor numbering changes
