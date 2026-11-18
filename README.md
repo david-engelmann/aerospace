@@ -89,7 +89,7 @@ everything re-sorts, and the bar redraws within a couple of seconds.
 - The bright pill is where you are. At the office, an outlined pill is what's showing on that screen.
 - Click a pill to go there.
 - An orange **SERVICE** badge means service mode is on (see below).
-- A red **AeroSpace can't see windows** badge means macOS's Accessibility layer is broken. See Troubleshooting.
+- A red **AeroSpace can't see windows** badge means macOS stopped reporting windows to AeroSpace. Log out and back in. See Troubleshooting.
 
 ## Two things that break it
 
@@ -120,7 +120,7 @@ Press **⌃⌥/**, then one key. It returns to normal by itself.
 | Symptom | Fix |
 | --- | --- |
 | Windows are side by side, on the wrong letter, or an app opens a new window instead of showing its existing one | ⌃⌥/ then A |
-| Red "AeroSpace can't see windows" badge | Click it and check AeroSpace is switched on under Accessibility. If it already is, macOS's Accessibility layer is broken for this login session (seen after the window server hung on wake); reboot. |
+| Red "AeroSpace can't see windows" badge | macOS's Accessibility layer broke, almost always after the window server hung and restarted (check: `ls -t /Library/Logs/DiagnosticReports \| grep WindowServer`). Nothing inside the session fixes it: **log out and back in**, or reboot. If it appears without a window-server restart, click it and check AeroSpace is switched on under Accessibility. |
 | Keys do nothing | Run `aerospace list-workspaces --focused`. If it hangs: `pkill -x AeroSpace; open -a AeroSpace` |
 | ⌥Space does nothing | Open Raycast, run "Switch Windows" once, and choose **Always Run Command** when asked |
 | Bar looks stale | ⌃⌥/ then B |
